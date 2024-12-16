@@ -1,0 +1,147 @@
+import {
+    apiSignIn,
+    apiSignOut,
+    apiSignUp,
+    apiUser,
+    csrfToken,
+} from '@/services/AuthService'
+import {
+    setUser,
+    signInSuccess,
+    signOutSuccess,
+    useAppSelector,
+    useAppDispatch,
+    setCurrentPlan,
+} from '@/store'
+import appConfig from '@/configs/app.config'
+import { useNavigate } from 'react-router-dom'
+import type { SignInCredential, SignUpCredential } from '@/@types/auth'
+import { useEffect } from 'react'
+import useQuery from './useQuery'
+import { emptyUser, REDIRECT_URL_KEY } from '../../constants/app.constant'
+import { set } from 'lodash'
+
+// import {Notification as Notify} from '@/components/ui/Notification'
+
+// import toast from '@/toast/toast'
+
+type Status = 'success' | 'failed'
+
+const useAuth = () => {
+    const dispatch = useAppDispatch()
+
+    const navigate = useNavigate()
+    const query = useQuery()
+
+    const { signedIn } = useAppSelector((state) => state.auth.session)
+    const { user } = useAppSelector((state) => state.auth)
+    // const user = localStorage.getItem('user')
+    useEffect(() => {
+        // const token: string | undefined = document.cookie
+        //     .split('; ')
+        //     .find((row) => row.startsWith('XSRF-TOKEN'))
+        //     ?.split('=')[1]
+        //
+        // if (!token) {
+        //     localStorage.clear()
+        //     handleSignOut()
+        // }
+        const authUser = user.username
+        // if (authUser == '' || authUser == undefined || !authUser) {
+        //     checkUser()
+        // }
+    }, [])
+
+    async function checkUser() {
+        await apiUser().then((data) => {
+            if (data?.status == 200 && data?.data?.verified == true) {
+                const user = data?.data
+
+                // localStorage.setItem('user', JSON.stringify(user))
+                dispatch(signInSuccess())
+                dispatch(setUser(user))
+                dispatch(setCurrentPlan(user.current_level))
+            }
+        })
+    }
+
+    const signIn = async (
+        values: SignInCredential
+    ): Promise<
+        | {
+              status: Status
+              message: string
+          }
+        | undefined
+    > => {
+        try {
+            await csrfToken().then(async () => {
+                const resp = await apiSignIn(values)
+                console.log(resp)
+                if (resp?.status !== 200) {
+                    throw Error(resp?.data?.message)
+                }
+                dispatch(signInSuccess())
+                dispatch(setUser(resp.data.user))
+                return {
+                    status: 'success',
+                    message: resp?.data?.message || 'Login Succesful',
+                }
+            })
+
+            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+        } catch (errors: any) {
+            return {
+                status: 'failed',
+                message: errors?.response?.data?.message || errors.toString(),
+            }
+        }
+    }
+
+    const signUp = async (values: SignUpCredential) => {
+        try {
+            const resp = await apiSignUp(values)
+
+            if (resp?.status == 201) {
+                return {
+                    status: 'success',
+                    message: resp?.data?.message,
+                }
+            } else {
+                throw Error(resp?.data?.message)
+            }
+
+            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+        } catch (errors: any) {
+            return {
+                status: 'failed',
+                message: errors?.response?.data?.message || errors.toString(),
+            }
+        }
+    }
+
+    const handleSignOut = () => {
+        dispatch(signOutSuccess())
+        dispatch(setUser(emptyUser))
+    }
+
+    const signOut = async () => {
+        const data = await apiSignOut()
+        console.log(data)
+        if (data.status == 204) {
+            localStorage.clear()
+
+            handleSignOut()
+            navigate(appConfig.unAuthenticatedEntryPath)
+        }
+    }
+
+    return {
+        authenticated: user && signedIn,
+        signIn,
+        signUp,
+        signOut,
+    }
+}
+
+export default useAuth
