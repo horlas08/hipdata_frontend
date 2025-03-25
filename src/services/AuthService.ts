@@ -1,13 +1,14 @@
 import ApiService from './ApiService'
-import type {
-    SignInCredential,
-    SignUpCredential,
-    ForgotPassword,
-    ResetPassword,
-    SignInResponse,
-    SignUpResponse,
-    UserCheck,
+import {
     apiChangePasswordType,
+    ForgotPassword,
+    PinConfirmationCredential,
+    PinConfirmationResponse,
+    ResetPassword,
+    SignInCredential,
+    SignInResponse,
+    SignUpCredential,
+    UserCheck,
 } from '@/@types/auth'
 import BaseService from './BaseService'
 import { PasswordFormModel } from '@/views/User/Settings/components/Password'
@@ -24,6 +25,7 @@ export async function apiSignIn(data: SignInCredential) {
 export async function tokenApi() {
     return BaseService.get('/token')
 }
+
 export async function apiSignUp(data: SignUpCredential) {
     return ApiService.fetchData<SignInResponse>({
         url: '/auth/register',
@@ -31,18 +33,29 @@ export async function apiSignUp(data: SignUpCredential) {
         data,
     })
 }
+
+export async function apiConfirmPinRequest(data: PinConfirmationCredential) {
+    return ApiService.fetchData<PinConfirmationResponse>({
+        url: '/user/pin-confirmation',
+        method: 'post',
+        data,
+    })
+}
+
 export async function apiUser() {
     return ApiService.fetchData<UserCheck>({
         url: `${appConfig.apiWeb}/user`,
         method: 'get',
     })
 }
+
 export async function apiSignOut() {
     return ApiService.fetchData({
         url: '/user',
         method: 'get`',
     })
 }
+
 export async function csrfToken() {
     return ApiService.fetchData({
         url: `${appConfig.apiWeb}/sanctum/csrf-cookie/`,
@@ -58,6 +71,7 @@ export async function apiForgotPassword(data: ForgotPassword) {
         data,
     })
 }
+
 export async function apiChangePassword(data: PasswordFormModel) {
     const datas = {
         current_password: data.password,

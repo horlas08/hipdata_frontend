@@ -41,12 +41,14 @@ BaseService.interceptors.request.use(
         return config
     },
     (error) => {
+        console.log(error)
         return error
     }
 )
 
 BaseService.interceptors.response.use(
     (response) => {
+        console.log(response)
         // if (response.status == 401) {
         //     window.localStorage.clear()
         // }
@@ -58,6 +60,7 @@ BaseService.interceptors.response.use(
         return response
     },
     (error) => {
+        console.log(error)
         const { response } = error
 
         if (response && unauthorizedCode.includes(response.status)) {

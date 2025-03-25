@@ -2,16 +2,15 @@ import React, { useState } from 'react'
 import { Field, FieldProps, Form, Formik } from 'formik'
 import * as Yup from 'yup'
 import {
+    Alert,
     Button,
     FormContainer,
     FormItem,
     Input,
     Select,
-} from '../../../components/ui'
+} from '@/components/ui'
 import { SingleValue } from 'react-select'
-import { BankingWalletResponse } from '../../../services/SiteService'
 import { useAppSelector } from '@/store'
-import { Alert } from '@/components/ui'
 import { ActionLink } from '@/components/shared'
 
 const initialValues = {
@@ -53,7 +52,9 @@ const Index = () => {
             <Formik
                 validationSchema={withdrawalValidateScheme}
                 initialValues={initialValues}
-                onSubmit={() => {}}
+                onSubmit={() => {
+                    //
+                }}
             >
                 {({ values, touched, errors, isSubmitting }) => {
                     return (
@@ -150,7 +151,7 @@ const Index = () => {
                                             type="text"
                                             autoComplete="off"
                                             name="amount"
-                                            placeholder="Amount In Dollar"
+                                            placeholder="Amount"
                                             component={Input}
                                         />
                                     </FormItem>

@@ -1,4 +1,4 @@
-import { ReactNode, CSSProperties } from 'react'
+import { CSSProperties, ReactNode } from 'react'
 
 export interface CommonProps {
     className?: string
@@ -15,4 +15,9 @@ export type TableQueries = {
         order: 'asc' | 'desc' | ''
         key: string | number
     }
+}
+
+export type ErrorType = {
+    status: string
+    message: string
 }

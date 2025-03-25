@@ -4,8 +4,9 @@ import appConfig from '@/configs/app.config'
 import { signInUserData } from './data/authData'
 
 import { authFakeApi } from './fakeApi'
+import billFakeApi from '@/mock/fakeApi/billFakeApi'
 
-const { apiPrefix } = appConfig
+const { apiPrefix, apiWeb } = appConfig
 
 export function mockServer({ environment = 'test' }) {
     return createServer({
@@ -19,12 +20,12 @@ export function mockServer({ environment = 'test' }) {
             this.urlPrefix = ''
             this.namespace = ''
             this.passthrough((request) => {
-                const isExternal = request.url.startsWith('http')
-                return isExternal
+                return !request.url.includes('localhost')
             })
             this.passthrough()
 
-            authFakeApi(this, apiPrefix)
+            authFakeApi(this, apiWeb)
+            billFakeApi(this, apiPrefix)
         },
     })
 }

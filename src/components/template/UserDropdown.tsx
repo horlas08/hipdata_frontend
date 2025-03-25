@@ -51,7 +51,7 @@ const _UserDropdown = ({ className }: CommonProps) => {
         })
     }
     const user = useAppSelector((state) => state.auth.user)
-    console.log(user)
+  
     const UserAvatar = (
         <div className={classNames(className, 'flex items-center gap-2')}>
             {user.image ? (

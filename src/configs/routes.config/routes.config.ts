@@ -10,10 +10,54 @@ export const protectedRoutes: Routes = [
         path: '/home',
         component: lazy(() => import('@/views/User/Home/Index')),
         authority: [],
-    },{
-        key: 'airtime',
-        path: '/airtime',
+    },
+    {
+        key: 'airtime.direct',
+        path: '/airtime/direct',
         component: lazy(() => import('@/views/User/Airtime/Index')),
+        authority: [],
+    },
+    {
+        key: 'airtime.pin',
+        path: '/airtime/pin',
+        component: lazy(() => import('@/views/User/Airtime/Index')),
+        authority: [],
+    },
+    {
+        key: 'data',
+        path: '/data',
+        component: lazy(() => import('@/views/User/Data/Data')),
+        authority: [],
+    },
+
+    {
+        key: 'bill.cable',
+        path: '/bill/cable',
+        component: lazy(() => import('@/views/User/Cable/Index')),
+        authority: [],
+    },
+    {
+        key: 'bill.electricity',
+        path: '/bill/electricity',
+        component: lazy(() => import('@/views/User/Electricity/Index')),
+        authority: [],
+    },
+    {
+        key: 'bill.education',
+        path: '/bill/education',
+        component: lazy(() => import('@/views/User/Education/Index')),
+        authority: [],
+    },
+    {
+        key: 'withdraw',
+        path: '/withdraw',
+        component: lazy(() => import('@/views/User/Withdraw/Index')),
+        authority: [],
+    },
+    {
+        key: 'deposit',
+        path: '/deposit',
+        component: lazy(() => import('@/views/User/Deposit/Wallets/index')),
         authority: [],
     },
 

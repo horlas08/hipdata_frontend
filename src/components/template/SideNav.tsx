@@ -1,13 +1,13 @@
 import classNames from 'classnames'
 import ScrollBar from '@/components/ui/ScrollBar'
 import {
-    SIDE_NAV_WIDTH,
-    SIDE_NAV_COLLAPSED_WIDTH,
+    LOGO_X_GUTTER,
     NAV_MODE_DARK,
     NAV_MODE_THEMED,
     NAV_MODE_TRANSPARENT,
+    SIDE_NAV_COLLAPSED_WIDTH,
     SIDE_NAV_CONTENT_GUTTER,
-    LOGO_X_GUTTER,
+    SIDE_NAV_WIDTH,
 } from '@/constants/theme.constant'
 import Logo from '@/components/template/Logo'
 import navigationConfig from '@/configs/navigation.config'
@@ -89,6 +89,7 @@ const SideNav = () => {
                     <div className="side-nav-header">
                         <Logo
                             mode={logoMode()}
+                            logoWidth={150}
                             type={sideNavCollapse ? 'streamline' : 'full'}
                             className={
                                 sideNavCollapse

@@ -5,6 +5,7 @@ export type SignInCredential = {
     password: string
     _token?: string
 }
+
 export interface User {
     id: number
     firstname: string
@@ -26,14 +27,20 @@ export type SignInResponse = {
     message?: string
     user: User
 }
+export type PinConfirmationResponse = {
+    message: string
+    match: false
+}
 export type apiChangePasswordType = {
     message?: string
 }
+
 export interface UserCheck extends UserState {
     username: string
     verified: boolean
     current_level: CurrentPlanState
 }
+
 export type SignUpResponse = SignInResponse
 export type CountryValidate = {
     label: string
@@ -47,6 +54,9 @@ export type SignUpCredential = {
     firstname: string
     lastname: string
     mobile: string
+}
+export type PinConfirmationCredential = {
+    pin: string
 }
 
 export type ForgotPassword = {

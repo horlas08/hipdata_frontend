@@ -1,4 +1,5 @@
 import {
+    apiConfirmPinRequest,
     apiSignIn,
     apiSignOut,
     apiSignUp,
@@ -6,20 +7,25 @@ import {
     csrfToken,
 } from '@/services/AuthService'
 import {
+    setCurrentPlan,
     setUser,
     signInSuccess,
     signOutSuccess,
-    useAppSelector,
     useAppDispatch,
-    setCurrentPlan,
+    useAppSelector,
 } from '@/store'
 import appConfig from '@/configs/app.config'
 import { useNavigate } from 'react-router-dom'
-import type { SignInCredential, SignUpCredential } from '@/@types/auth'
+import {
+    PinConfirmationCredential,
+    PinConfirmationResponse,
+    SignInCredential,
+    SignUpCredential,
+} from '@/@types/auth'
 import { useEffect } from 'react'
 import useQuery from './useQuery'
-import { emptyUser, REDIRECT_URL_KEY } from '../../constants/app.constant'
-import { set } from 'lodash'
+import { emptyUser } from '../../constants/app.constant'
+import { ErrorType } from '@/@types/common'
 
 // import {Notification as Notify} from '@/components/ui/Notification'
 
@@ -119,6 +125,26 @@ const useAuth = () => {
             }
         }
     }
+    const confirmPin = async (
+        values: PinConfirmationCredential
+    ): Promise<PinConfirmationResponse | ErrorType> => {
+        try {
+            const resp = await apiConfirmPinRequest(values)
+
+            if (resp?.status == 200 && resp.data.match) {
+                return resp.data
+            } else {
+                throw Error(resp?.data?.message)
+            }
+
+            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+        } catch (errors: any) {
+            return {
+                status: 'failed',
+                message: errors?.response?.data?.message || errors.toString(),
+            }
+        }
+    }
 
     const handleSignOut = () => {
         dispatch(signOutSuccess())
@@ -140,6 +166,7 @@ const useAuth = () => {
         authenticated: user && signedIn,
         signIn,
         signUp,
+        confirmPin,
         signOut,
     }
 }

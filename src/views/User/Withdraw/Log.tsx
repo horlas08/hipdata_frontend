@@ -12,10 +12,8 @@ import {
 import TBody from '@/components/ui/Table/TBody'
 import Td from '@/components/ui/Table/Td'
 import React, { useEffect, useState } from 'react'
-import { NumericFormat } from 'react-number-format'
 import dayjs from 'dayjs'
 import useThemeClass from '@/utils/hooks/useThemeClass'
-import { useNavigate } from 'react-router-dom'
 import {
     apiWithdrawalLogs,
     WithdrawalLogsResponse,
@@ -24,10 +22,10 @@ import {
 type WithdrawalOrderColumnPros = {
     row: WithdrawalLogsResponse
 }
-const WithdrawalLogs = () => {
+const Log = () => {
     const [data, setData] = useState<WithdrawalLogsResponse[]>([])
 
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
     useEffect(() => {
         apiWithdrawalLogs().then((res) => {
             setData(res.data)
@@ -169,4 +167,4 @@ const WithdrawalLogs = () => {
         </Loading>
     )
 }
-export default WithdrawalLogs
+export default Log

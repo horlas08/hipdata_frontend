@@ -7,5 +7,13 @@ export const signInUserData = [
         authority: ['admin', 'user'],
         password: '123Qwe',
         accountUserName: 'admin',
+    },{
+        id: '1',
+        avatar: '/img/avatars/thumb-1.jpg',
+        username: 'Carolyn Perkins',
+        email: 'test@example.com',
+        authority: ['admin', 'user'],
+        password: 'password',
+        accountUserName: 'admin',
     },
 ]

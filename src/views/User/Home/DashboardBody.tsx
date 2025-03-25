@@ -1,13 +1,11 @@
-import { useEffect } from 'react'
 import Loading from '@/components/shared/Loading'
 import Statistic, { StatisticProps } from './Statistic'
-import { Card, Input, Progress, Tooltip, toast } from '@/components/ui'
+import { Input, toast, Tooltip } from '@/components/ui'
 import { HiOutlineDuplicate } from 'react-icons/hi'
 import classNames from 'classnames'
 import useThemeClass from '@/utils/hooks/useThemeClass'
 import Notification from '@/components/ui/Notification'
 import { useAppSelector } from '@/store'
-import ProgressionBar from '../Referral/ProgressionBar'
 
 export type Wallet = {
     ref_link: string
@@ -15,8 +13,8 @@ export type Wallet = {
 
 const DashboardBody = ({ data = {} }: { data: Partial<Wallet> }) => {
     const { textTheme } = useThemeClass()
-    const currentPlan = useAppSelector((state) => state.auth.currentPlan)
     const user = useAppSelector((state) => state.auth.user)
+    console.log(user)
     const statsData: StatisticProps = {
         balance: {
             value: Number.parseFloat(user.balance),
@@ -30,7 +28,6 @@ const DashboardBody = ({ data = {} }: { data: Partial<Wallet> }) => {
             value: Number.parseFloat(user.balance),
             growShrink: 1,
         },
-
     }
     // const loading = useAppSelector((state) => state.salesDashboard.data.loading)
 
@@ -54,9 +51,11 @@ const DashboardBody = ({ data = {} }: { data: Partial<Wallet> }) => {
 
     return (
         <Loading loading={false}>
-
-
-            <Statistic  balance={statsData.balance} totalReferrals={statsData.totalReferrals} totalSpend={statsData.totalSpend}/>
+            <Statistic
+                balance={statsData.balance}
+                totalReferrals={statsData.totalReferrals}
+                totalSpend={statsData.totalSpend}
+            />
             <h3>Referral Link</h3>
             <Input
                 readOnly

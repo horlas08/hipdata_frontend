@@ -1,21 +1,29 @@
-import { Server, Response } from 'miragejs'
+import { Response, Server } from 'miragejs'
 import uniqueId from 'lodash/uniqueId'
 import isEmpty from 'lodash/isEmpty'
 
 export default function authFakeApi(server: Server, apiPrefix: string) {
-    server.post(`${apiPrefix}/sign-in`, (schema, { requestBody }) => {
-        const { username, password } = JSON.parse(requestBody)
+    server.post(`${apiPrefix}/api/login`, (schema, { requestBody }) => {
+        const { email, password } = JSON.parse(requestBody)
         const user = schema.db.signInUserData.findBy({
-            accountUserName: username,
+            email: email,
             password,
         })
         console.log('user', user)
         if (user) {
             const { avatar, username, email, authority } = user
-            return {
-                user: { avatar, username, email, authority },
-                token: 'wVYrxaeNa9OxdnULvde1Au5m5w63',
-            }
+            return new Response(
+                200,
+                { some: 'header' },
+                {
+                    user: { avatar, username, email, authority },
+                    token: 'wVYrxaeNa9OxdnULvde1Au5m5w63',
+                }
+            )
+            // return {
+            //     user: { avatar, username, email, authority },
+            //     token: 'wVYrxaeNa9OxdnULvde1Au5m5w63',
+            // }
         }
         return new Response(
             401,
@@ -24,7 +32,20 @@ export default function authFakeApi(server: Server, apiPrefix: string) {
         )
     })
 
+    server.post(`${apiPrefix}/api/user/pin-confirmation`, () => {
+        return new Response(
+            200,
+            { some: 'header' },
+            {
+                message: 'Pin confirmation successful',
+                match: true,
+            }
+        )
+    })
     server.post(`${apiPrefix}/sign-out`, () => {
+        return true
+    })
+    server.get(`${apiPrefix}/sanctum/csrf-cookie/`, () => {
         return true
     })
 

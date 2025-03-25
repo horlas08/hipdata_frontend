@@ -7,28 +7,19 @@ import {
     Select,
     toast,
 } from '@/components/ui'
-
-import { csrfToken } from '@/services/AuthService'
-import { AirtimeNetworkProvider, apiBuyAirtime, apiGetAirtimeNetwork } from '@/services/BankingService'
-import {
-    Field,
-    FieldProps,
-    Form,
-    Formik,
-    FormikHelpers,
-    FormikValues,
-} from 'formik'
-import React, { useEffect, useMemo, useState } from 'react'
+import { apiGetAirtimeNetwork } from '@/services/BillingService'
+import { Field, FieldProps, Form, Formik } from 'formik'
+import React, { useEffect, useState } from 'react'
 import * as Yup from 'yup'
 
 import useTimeOutMessage from '@/utils/hooks/useTimeOutMessage'
-import useBankingRequest from './Hooks/useBankingRequest'
 import { SingleValue } from 'react-select'
-import { apiBankingWallet, BankingWalletResponse, SelectKeyValue } from '@/services/SiteService'
-import { useNigerianPhone } from '@/utils/hooks/useNigerianPhone'
+import { SelectKeyValue } from '@/services/SiteService'
 import { useNetworkDetect } from '@/utils/hooks/useNetworkDetect'
 import { HttpStatusCode } from 'axios'
 import isEmpty from 'lodash/isEmpty'
+import useBillingRequest from '@/utils/hooks/useBillingRequest'
+import { AirtimeNetworkProvider } from '@/@types/billing'
 
 const initialValue = {
     phone: '09014985680',
@@ -44,7 +35,7 @@ export type BuyAirtimeScheme = {
     phone: string
     amount: number
     network: string
-    wallet: string
+    wallet?: string
 }
 const phoneRegExp =
     /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/
@@ -60,14 +51,16 @@ const airtimeValidationScheme = Yup.object().shape({
         .min(100, 'amount cant less than 100Naira'),
 
     network: Yup.string()
-        .oneOf(['mtn', 'glo', '9mobile', 'airtel', '1'], 'Invalid Nework Select')
+        .oneOf(
+            ['mtn', 'glo', '9mobile', 'airtel', '1'],
+            'Invalid Nework Select'
+        )
         .required('Please Select Network'),
     wallet: Yup.string()
-        .oneOf([
-            'referral_wallet',
-            'betting_wallet',
-            'funding_wallet',
-        ], 'Invalid Wallet Please select From The List')
+        .oneOf(
+            ['referral_wallet', 'betting_wallet', 'funding_wallet'],
+            'Invalid Wallet Please select From The List'
+        )
         .required('Please Select A Wallet'),
 })
 
@@ -78,24 +71,25 @@ const Airtime = () => {
     const [networks, setNetworks] = useState<AirtimeNetworkProvider[]>([])
     const [wallet, setWallets] = useState<SelectKeyValue[]>([])
     const [message, setMessage] = useTimeOutMessage()
-    const { AirtimeRequest } = useBankingRequest()
-    const { phone, setPhone, error, getNetworkName } = useNetworkDetect();
+    const { AirtimeRequest } = useBillingRequest()
+    const { phone, setPhone, error, getNetworkName } = useNetworkDetect()
 
+    async function handleGetNetwork() {
+        setLoading(true)
+        const response = await apiGetAirtimeNetwork()
+        if (response.status == HttpStatusCode.Ok) {
+            setNetworks(response.data)
+            console.log(response.data)
+        }
+        setLoading(false)
+    }
 
-   async function handleGetNetwork(){
-       setLoading(true)
-       const response  = await  apiGetAirtimeNetwork();
-       if(response.status == HttpStatusCode.Ok){
-           setNetworks(response.data)
-       }
-       setLoading(false)
-   }
     function walletFocus() {
         setWallets([
             {
                 label: 'Funding wallet',
-                value: 'funding_wWCWallet'
-            }
+                value: 'funding_wallet',
+            },
         ])
         if (!wallet) {
             setLoading(true)
@@ -108,27 +102,8 @@ const Airtime = () => {
     }
 
     useEffect(() => {
-        // setNetworks([
-        //     {
-        //         value: 'mtn',
-        //         label: 'Mtn',
-        //     },
-        //     {
-        //         value: 'glo',
-        //         label: 'Glo',
-        //     },
-        //     {
-        //         value: 'airtel',
-        //         label: 'Airtel',
-        //     },
-        //     {
-        //         value: '9mobile',
-        //         label: '9Mobile',
-        //     },
-        // ])
-        if(isEmpty(networks)){
-
-           ( async ()=> await handleGetNetwork())()
+        if (isEmpty(networks)) {
+            ;(async () => await handleGetNetwork())()
         }
     }, [networks])
 
@@ -184,7 +159,15 @@ const Airtime = () => {
                     // }
                 }}
             >
-                {({ values,setFieldValue,setFieldError,setFieldTouched, errors, touched, isSubmitting }) => (
+                {({
+                    values,
+                    setFieldValue,
+                    setFieldError,
+                    setFieldTouched,
+                    errors,
+                    touched,
+                    isSubmitting,
+                }) => (
                     <Form>
                         <FormContainer>
                             <div className="flex gap-2">
@@ -193,7 +176,6 @@ const Airtime = () => {
                                     label="Phone Number"
                                     invalid={errors.phone && touched.phone}
                                     errorMessage={errors.phone}
-
                                 >
                                     <Field
                                         type="text"
@@ -201,20 +183,27 @@ const Airtime = () => {
                                         name="phone"
                                         placeholder="E.g 09055677899"
                                         component={Input}
-                                        onChange={(event: any)=>{
-                                            setPhone( event.target.value as string)
-                                            setFieldValue('phone', event.target.value as string)
-                                            if(error){
+                                        onChange={(event: any) => {
+                                            setPhone(
+                                                event.target.value as string
+                                            )
+                                            setFieldValue(
+                                                'phone',
+                                                event.target.value as string
+                                            )
+                                            if (error) {
                                                 setFieldError('phone', error)
                                                 setFieldTouched('phone', true)
                                             }
 
-                                            if(getNetworkName() != null) {
-                                                setFieldValue('network', getNetworkName()?.toLowerCase())
-                                            }else {
+                                            if (getNetworkName() != null) {
+                                                setFieldValue(
+                                                    'network',
+                                                    getNetworkName()?.toLowerCase()
+                                                )
+                                            } else {
                                                 setFieldValue('network', '')
                                             }
-
                                         }}
                                     />
                                 </FormItem>
@@ -249,30 +238,29 @@ const Airtime = () => {
                                             field={field}
                                             form={form}
                                             options={networks}
-
-                                            value={networks.filter(
-                                                (option: AirtimeNetworkProvider) =>
+                                            value={networks?.filter(
+                                                (
+                                                    option: AirtimeNetworkProvider
+                                                ) =>
                                                     option.alias ===
                                                     values.network
                                             )}
                                             isLoading={loading}
-                                           onFocus={async event => {
-                                               if(isEmpty(networks)){
-
-                                                   await handleGetNetwork()
-                                               }
-
-                                           }}
-                                            getOptionLabel={option => {
+                                            onFocus={async (event) => {
+                                                if (isEmpty(networks)) {
+                                                    await handleGetNetwork()
+                                                }
+                                            }}
+                                            getOptionLabel={(option) => {
                                                 return option.name.toUpperCase()
                                             }}
-                                            getOptionValue={option => {
+                                            getOptionValue={(option) => {
                                                 return option.alias
                                             }}
-                                            onChange={ (
+                                            onChange={(
                                                 option: SingleValue<AirtimeNetworkProvider>
                                             ) => {
-                                                 form.setFieldValue(
+                                                form.setFieldValue(
                                                     field.name,
                                                     option?.alias
                                                 )
@@ -302,10 +290,10 @@ const Airtime = () => {
                                                     values.wallet
                                             )}
                                             onFocus={() => walletFocus()}
-                                            onChange={ (
+                                            onChange={(
                                                 option: SingleValue<SelectKeyValue>
                                             ) => {
-                                                 form.setFieldValue(
+                                                form.setFieldValue(
                                                     field.name,
                                                     option?.value
                                                 )

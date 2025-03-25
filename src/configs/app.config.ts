@@ -15,7 +15,7 @@ const appConfig: AppConfig = {
     unAuthenticatedEntryPath: '/sign-in',
     tourPath: '/',
     locale: 'en',
-    enableMock: false,
+    enableMock: true,
 }
 
 export default appConfig
