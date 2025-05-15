@@ -110,10 +110,10 @@ export const protectedRoutes: Routes = [
     //     component: lazy(() => import('@/views/User/Transaction/Index')),
     //     authority: [],
     // },
-    // {
-    //     key: 'settings',
-    //     path: '/user/settings/profile',
-    //     component: lazy(() => import('@/views/User/Settings')),
-    //     authority: [],
-    // },
+    {
+        key: 'settings',
+        path: '/user/settings/*',
+        component: lazy(() => import('@/views/User/Settings')),
+        authority: [],
+    },
 ]

@@ -20,6 +20,7 @@ const initialState: UserState = {
     username: '',
 
     email_verified_at: '',
+    pin: null,
 }
 
 const userSlice = createSlice({
@@ -34,6 +35,7 @@ const userSlice = createSlice({
             state.mobile = action.payload?.mobile
             state.balance = action.payload?.balance
             state.user_type = action.payload?.user_type
+            state.pin = action.payload?.pin
         },
     },
 })

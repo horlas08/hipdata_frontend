@@ -12,6 +12,7 @@ import {
 } from '@/@types/auth'
 import BaseService from './BaseService'
 import { PasswordFormModel } from '@/views/User/Settings/components/Password'
+import { PinFormModel } from '@/views/User/Settings/components/Pin'
 import appConfig from '@/configs/app.config'
 
 export async function apiSignIn(data: SignInCredential) {
@@ -79,8 +80,8 @@ export async function apiChangePassword(data: PasswordFormModel) {
         password_confirmation: data.confirmNewPassword,
     }
     return ApiService.fetchData<apiChangePasswordType>({
-        url: 'http://localhost:8000/user/password',
-        method: 'put',
+        url: '/user/change-password',
+        method: 'post',
         data: datas,
     })
 }
@@ -90,5 +91,22 @@ export async function apiResetPassword(data: ResetPassword) {
         url: '/reset-password',
         method: 'post',
         data,
+    })
+}
+
+export type apiChangePinType = {
+    message?: string
+}
+
+export async function apiChangePin(data: PinFormModel) {
+    const datas = {
+        current_pin: data.currentPin,
+        pin: data.newPin,
+        pin_confirmation: data.confirmNewPin,
+    }
+    return ApiService.fetchData<apiChangePinType>({
+        url: '/user/change-pin',
+        method: 'post',
+        data: datas,
     })
 }

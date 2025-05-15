@@ -7,11 +7,19 @@ export interface AirtimeNetworkProvider {
     alias: string
     name: string
 }
-
+export interface DataNetworkTypes extends AirtimeNetworkProvider {
+    id: string
+}
 export interface DataResponse extends AirtimeResponse {
     amount: string | number
 }
-
+export type DataProviderType = {
+    id: string,
+    alias: string,
+    name: string,
+    status: number
+    type: DataNetworkTypes[]
+}
 export type NetworkType = {
     value: string
     label: string
@@ -35,7 +43,7 @@ export type DiscoType = {
 }
 
 export type AvailableNetworkResponse = {
-    data: NetworkType[]
+    data: DataProviderType[]
     message: string
 }
 export type AvailableCableResponse = {

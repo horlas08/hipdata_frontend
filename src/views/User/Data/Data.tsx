@@ -29,9 +29,11 @@ import { BankingWalletResponse } from '@/services/SiteService'
 import { HiCheck } from 'react-icons/hi'
 import { useNetworkDetect } from '@/utils/hooks/useNetworkDetect'
 import {
+    DataNetworkTypes,
+    DataProviderType,
     DataVariationResponse,
     NetworkPlanType,
-    NetworkType,
+    NetworkType
 } from '@/@types/billing'
 import { isErrorType } from '@/utils/helpeer'
 import isEmpty from 'lodash/isEmpty'
@@ -78,19 +80,19 @@ const dataValidationScheme: ObjectSchema<DataFormType> = Yup.object().shape({
         .min(100, 'amount cant less than 100'),
 
     network: Yup.string()
-        .oneOf(
-            [
-                'mtn-data',
-                'glo-data',
-                'etisalat-data',
-                'airtel-data',
-                'mtn',
-                'glo',
-                'airtel',
-                '9mobile',
-            ],
-            'Invalid Nework Select'
-        )
+        // .oneOf(
+        //     [
+        //         'mtn-data',
+        //         'glo-data',
+        //         'etisalat-data',
+        //         'airtel-data',
+        //         'mtn',
+        //         'glo',
+        //         'airtel',
+        //         '9mobile',
+        //     ],
+        //     'Invalid Nework Select'
+        // )
         .required('Please Select Network'),
     // wallet: Yup.string()
     //     .oneOf([
@@ -112,8 +114,9 @@ const Data = () => {
     const [networksIsLoading, setNetworksIsLoading] = useState<boolean>(false)
     const [planIsLoading, setPlanIsLoading] = useState<boolean>(false)
     const [planTypeIsLoading, setPlanTypeIsLoading] = useState<boolean>(false)
-    const [networks, setNetworks] = useState<NetworkType[]>([])
-    const [planType, setPlanType] = useState<NetworkPlanType[]>([])
+    const [NetworkTypeIsLoading, setNetworkTypeIsLoading] = useState<boolean>(false)
+    const [networks, setNetworks] = useState<DataProviderType[]>([])
+    const [planType, setPlanType] = useState<DataNetworkTypes[]>([])
     const [wallets, setWallets] = useState<BankingWalletResponse[]>([])
     const [wallet, setWallet] = useState(false)
     const [plans, setPlans] = useState<DataVariationResponse['data']>([])
@@ -135,11 +138,22 @@ const Data = () => {
             })
             .finally(() => {
                 setNetworksIsLoading(false)
+                console.log(networks)
             })
 
         setWallets([])
     }, [])
 
+    function getNetworkIdByName( network: string){
+        if(network.toLowerCase() == 'mtn')
+            return 1;
+        else if(network.toLowerCase() == 'glo')
+            return 2;
+        else if(network.toLowerCase() == 'airtel')
+            return 3;
+        else
+            return 4;
+    }
     function handleChangeNetwork(
         network: string,
         setFieldValue: (
@@ -148,23 +162,39 @@ const Data = () => {
             shouldValidate?: boolean | undefined
         ) => Promise<void | FormikErrors<DataFormType>>
     ) {
-        setPlanType([])
+
+        setFieldValue('network', getNetworkIdByName(network))
+
         setFieldValue('planType', null)
         setFieldValue('plan', null)
         setPlans([])
     }
 
-    const onPlanTypeFocus = async (network: string) => {
-        if (isEmpty(planType)) {
-            setPlanTypeIsLoading(true)
-            const res = await GetDataType({ network })
+
+    const onNetworkTypeFocus = async () => {
+
+        if ((isEmpty(networks) || !networks) && !networksIsLoading) {
+            setNetworksIsLoading(true)
+            const res = await DataAvailableNetwork()
             if (!isErrorType(res)) {
-                console.log(res['data'])
-                setPlanType(res['data'])
+                console.log(res.data)
+                setNetworks(res.data)
             }
-            setPlanTypeIsLoading(false)
+            setNetworksIsLoading(false)
         }
     }
+
+    // const onPlanTypeFocus = async (network: string) => {
+    //     if (isEmpty(planType)) {
+    //         setPlanTypeIsLoading(true)
+    //         const res = await GetDataType({ network })
+    //         if (!isErrorType(res)) {
+    //             console.log(res['data'])
+    //             // setPlanType(res['data'])
+    //         }
+    //         setPlanTypeIsLoading(false)
+    //     }
+    // }
     const onPlanFocus = async (network: string, networkType: string) => {
         if (isEmpty(plans)) {
             setPlanIsLoading(true)
@@ -180,9 +210,10 @@ const Data = () => {
     const handlePinOk = async (_values: DataFormType) => {
         const { amount, phone, network } = _values
 
-        await AirtimeRequest({ amount, phone, network }).then((res) => {
+        try {
+            const res = await AirtimeRequest({ amount, phone, network });
             if (res?.status === 'failed') {
-                setMessage(res.message)
+                setMessage(res.message);
                 toast.push(
                     <Notification type="danger" duration={10000}>
                         <p>{res?.message || 'Recharge Not Successful'}</p>
@@ -190,7 +221,7 @@ const Data = () => {
                     {
                         placement: 'top-end',
                     }
-                )
+                );
             } else {
                 toast.push(
                     <Notification type="success" duration={10000}>
@@ -199,9 +230,18 @@ const Data = () => {
                     {
                         placement: 'top-end',
                     }
-                )
+                );
             }
-        })
+        } catch (error: any) {
+            toast.push(
+                <Notification type="danger" duration={10000}>
+                    <p>{error.toString()}</p>
+                </Notification>,
+                {
+                    placement: 'top-end',
+                }
+            );
+        }
     }
     const handleSubmit = async (values: BuyAirtimeScheme) => {
         setOpenPinModal(true)
@@ -209,48 +249,47 @@ const Data = () => {
 
     const CustomSelectOption:
         | React.ComponentType<
-              OptionProps<NetworkType, false, GroupBase<NetworkType>>
-          >
+            OptionProps<DataProviderType, false, GroupBase<DataProviderType>>
+        >
         | undefined = ({ innerProps, label, data, isSelected }) => {
-        return (
-            <div
-                className={`flex items-center justify-between p-2 ${
-                    isSelected
+            return (
+                <div
+                    className={`flex items-center justify-between p-2 ${isSelected
                         ? 'bg-gray-100 dark:bg-gray-500'
                         : 'hover:bg-gray-50 dark:hover:bg-gray-600'
-                }`}
-                {...innerProps}
-            >
-                <div className="flex items-center">
-                    <Avatar shape="circle" size={20} src={data.logo} />
-                    <span className="ml-2 rtl:mr-2">{label}</span>
+                        }`}
+                    {...innerProps}
+                >
+                    <div className="flex items-center">
+                        <Avatar shape="circle" size={20} src={`/img/networks/${data.alias}.png`} />
+                        <span className="ml-2 rtl:mr-2">{data.name}</span>
+                    </div>
+                    {isSelected && <HiCheck className="text-emerald-500 text-xl" />}
                 </div>
-                {isSelected && <HiCheck className="text-emerald-500 text-xl" />}
-            </div>
-        )
-    }
+            )
+        }
     const { phone, setPhone, error, getNetworkName } = useNetworkDetect()
 
     const CustomControl:
         | React.ComponentType<
-              ControlProps<NetworkType, false, GroupBase<NetworkType>>
-          >
+            ControlProps<DataProviderType, false, GroupBase<DataProviderType>>
+        >
         | undefined = ({ children, ...props }) => {
-        const selected = props.getValue()[0]
-        return (
-            <Control {...props}>
-                {selected && (
-                    <Avatar
-                        className="ltr:ml-4 rtl:mr-4"
-                        shape="circle"
-                        size={18}
-                        src={selected.logo}
-                    />
-                )}
-                {children}
-            </Control>
-        )
-    }
+            const selected = props.getValue()[0]
+            return (
+                <Control {...props}>
+                    {selected && (
+                        <Avatar
+                            className="ltr:ml-4 rtl:mr-4"
+                            shape="circle"
+                            size={18}
+                            src={`/img/networks/${selected.alias}.png`}
+                        />
+                    )}
+                    {children}
+                </Control>
+            )
+        }
 
     return (
         <div>
@@ -261,9 +300,11 @@ const Data = () => {
                 initialValues={initialValue}
                 validationSchema={dataValidationScheme}
                 validateOnMount={true}
+
                 onSubmit={async (values, { setSubmitting }) => {
                     if (!disableSubmit) {
-                        await handleSubmit(values)
+
+                        await handleSubmit(values,)
                     } else {
                         setSubmitting(false)
                     }
@@ -278,6 +319,8 @@ const Data = () => {
                     touched,
                     setFieldValue,
                     setSubmitting,
+                    isValid,
+
                     isSubmitting,
                 }) => (
                     <Form>
@@ -315,6 +358,7 @@ const Data = () => {
                                                 }
 
                                                 if (getNetworkName() != null) {
+
                                                     setFieldValue(
                                                         'network',
                                                         getNetworkName()?.toLowerCase()
@@ -330,7 +374,7 @@ const Data = () => {
                                             component={Input}
                                         />
                                         <div
-                                            style={{ minWidth: 100 }}
+                                            style={{ minWidth: 140 }}
                                             className={'h-11'}
                                         >
                                             <FormItem
@@ -340,7 +384,7 @@ const Data = () => {
                                                     errors.network &&
                                                     touched.network
                                                 }
-                                                // errorMessage={errors.network}
+                                            // errorMessage={errors.network}
                                             >
                                                 <Field name="network">
                                                     {({
@@ -356,31 +400,35 @@ const Data = () => {
                                                                 Control:
                                                                     CustomControl,
                                                             }}
+                                                            getOptionValue={option => option.id}
+                                                            getOptionLabel={option => option.name}
                                                             isLoading={
                                                                 networksIsLoading
                                                             }
                                                             value={networks.filter(
                                                                 (
-                                                                    option: NetworkType
+                                                                    option: DataProviderType
                                                                 ) =>
-                                                                    option.value ===
+                                                                    option.id ===
                                                                     values.network
                                                             )}
-                                                            // onFocus={onPlanFocus}
-                                                            onChange={(
-                                                                option: SingleValue<NetworkType>
+                                                            onFocus={async () => await onNetworkTypeFocus()}
+
+                                                            onChange={async (
+                                                                option: SingleValue<DataProviderType>
                                                             ) => {
                                                                 console.log(
                                                                     option
                                                                 )
                                                                 handleChangeNetwork(
-                                                                    option?.value as string,
+                                                                    option?.alias as string,
                                                                     setFieldValue
                                                                 )
+                                                                setPlanType(option!.type)
 
                                                                 form.setFieldValue(
                                                                     field.name,
-                                                                    option?.value
+                                                                    option?.id
                                                                 )
                                                             }}
                                                         />
@@ -410,22 +458,22 @@ const Data = () => {
                                                 isDisabled={!!errors.network}
                                                 options={planType}
                                                 isLoading={planTypeIsLoading}
+                                                getOptionValue={option => option.id}
+                                                getOptionLabel={option => option.name}
                                                 value={planType.filter(
-                                                    (option: NetworkPlanType) =>
-                                                        option.value ===
+                                                    (option: DataNetworkTypes) =>
+                                                        option.id ===
                                                         values.planType
                                                 )}
-                                                onFocus={() =>
-                                                    onPlanTypeFocus(
-                                                        values.network
-                                                    )
-                                                }
-                                                onChange={(
-                                                    option: SingleValue<NetworkPlanType>
+
+                                                onChange={async (
+                                                    option: SingleValue<DataNetworkTypes>
                                                 ) => {
-                                                    form.setFieldValue(
+                                                    setPlans([])
+
+                                                    await form.setFieldValue(
                                                         field.name,
-                                                        option?.value
+                                                        option?.id
                                                     )
                                                 }}
                                             />
@@ -452,8 +500,9 @@ const Data = () => {
                                             getOptionValue={(option) =>
                                                 option.variation_code
                                             }
+
                                             getOptionLabel={(option) =>
-                                                option.name
+                                                `${option.name} ----> ₦${option.variation_amount}`
                                             }
                                             isLoading={planIsLoading}
                                             value={plans.filter(
@@ -487,24 +536,28 @@ const Data = () => {
                                     )}
                                 </Field>
                             </FormItem>
+                            {!errors.plan && (
+                                <FormItem
+                                    className="w-full"
+                                    label="Amount"
+                                    invalid={errors.amount && touched.amount}
+                                    errorMessage={errors.amount}
+                                >
+                                    <Field
+                                        name="amount"
+                                        disabled={true}
+                                        component={Input}
+                                    />
+                                </FormItem>
+                            )}
 
-                            <FormItem
-                                className="w-full"
-                                label="Amount"
-                                invalid={errors.plan && touched.plan}
-                                errorMessage={errors.plan}
-                            >
-                                <Field
-                                    name="amount"
-                                    disabled={true}
-                                    component={Input}
-                                />
-                            </FormItem>
 
                             <Button
                                 block
                                 loading={isSubmitting}
                                 variant="solid"
+                                onClick={e => console.table(errors)}
+                                // onSubmit={()=>setOpenPinModal(true)}
                                 type="submit"
                             >
                                 {isSubmitting ? 'Please Wait...' : 'Buy Now'}

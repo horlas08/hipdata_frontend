@@ -20,4 +20,5 @@ export const emptyUser: User = {
     user_type: 0,
     username: '',
     email_verified_at: undefined,
+    pin: null,
 }

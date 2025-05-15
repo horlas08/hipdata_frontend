@@ -40,6 +40,7 @@ type GetAccountSettingData = AccountSetting
 
 const Profile = lazy(() => import('./components/Profile'))
 const Password = lazy(() => import('./components/Password'))
+const Pin = lazy(() => import('./components/Pin'))
 const NotificationSetting = lazy(
     () => import('./components/NotificationSetting')
 )
@@ -57,6 +58,7 @@ const settingsMenu: Record<
 > = {
     profile: { label: 'Profile', path: 'profile' },
     password: { label: 'Password', path: 'password' },
+    pin: { label: 'PIN', path: 'pin' },
     notification: { label: 'Notification', path: 'notification' },
     integration: { label: 'Integration', path: 'integration' },
     billing: { label: 'Billing', path: 'billing' },
@@ -112,6 +114,7 @@ const Settings = () => {
                         {currentTab === 'password' && (
                             <Password data={data.loginHistory} />
                         )}
+                        {currentTab === 'pin' && <Pin />}
                         {currentTab === 'notification' && (
                             <NotificationSetting data={data.notification} />
                         )}

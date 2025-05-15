@@ -7,7 +7,7 @@ import toast from '@/components/ui/toast'
 import { FormContainer } from '@/components/ui/Form'
 import FormDesription from './FormDesription'
 import FormRow from './FormRow'
-import { Field, Form, Formik } from 'formik'
+import { Field, Form, Formik, FormikState } from 'formik'
 import isLastChild from '@/utils/isLastChild'
 import {
     HiOutlineDesktopComputer,
@@ -48,20 +48,28 @@ const validationSchema = Yup.object().shape({
     password: Yup.string().required('Password Required'),
     newPassword: Yup.string()
         .required('Enter your new password')
-        .min(8, 'Too Short!')
-        .matches(/^[A-Za-z0-9_-]*$/, 'Only Letters & Numbers Allowed'),
+        .min(8, 'The password must be at least 8 characters')
+        .matches(/[a-z]/, 'The password must contain at least one lowercase letter')
+        .matches(/[A-Z]/, 'The password must contain at least one uppercase letter')
+        .matches(/[0-9]/, 'The password must contain at least one number'),
+        // .matches(/[@$!%*#?&]/, 'The password must contain at least one special character')
+        // .matches(/^[A-Za-z0-9_-]*$/, 'Only Letters & Numbers Allowed'),
+
     confirmNewPassword: Yup.string()
         .required('Password not match')
+
         .oneOf([Yup.ref('newPassword'), ''], 'Password not match'),
 })
 
 const Password = ({ data }: { data?: LoginHistory[] }) => {
     const onFormSubmit = (
         values: PasswordFormModel,
-        setSubmitting: (isSubmitting: boolean) => void
+        setSubmitting: (isSubmitting: boolean) => void,
+   resetForm: (nextState?: Partial<FormikState<PasswordFormModel>>) => void
     ) => {
-        apiChangePassword(values).then((res) => {
+          apiChangePassword(values).then((res) => {
             if (res.status != 200) {
+
                 return toast.push(
                     <Notification title={'Password Error'} type="danger">
                         {res.data?.message}
@@ -71,17 +79,24 @@ const Password = ({ data }: { data?: LoginHistory[] }) => {
                     }
                 )
             }
+              resetForm({
+
+              })
             return toast.push(
-                <Notification title={'Password Info'} type="success">
+                <Notification  title={'Password Info'}  type="success">
                     Password Update Successful
                 </Notification>,
 
+
                 {
-                    placement: 'top-center',
+                    placement: 'top-end',
                 }
             )
-        })
-        setSubmitting(false)
+        }).finally(() => {
+              setSubmitting(false);
+
+          })
+
     }
 
     return (
@@ -93,10 +108,10 @@ const Password = ({ data }: { data?: LoginHistory[] }) => {
                     confirmNewPassword: '',
                 }}
                 validationSchema={validationSchema}
-                onSubmit={(values, { setSubmitting }) => {
+                onSubmit={(values, { setSubmitting, resetForm }) => {
                     setSubmitting(true)
                     setTimeout(() => {
-                        onFormSubmit(values, setSubmitting)
+                        onFormSubmit(values, setSubmitting, resetForm)
                     }, 1000)
                 }}
             >

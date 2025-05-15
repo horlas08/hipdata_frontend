@@ -8,7 +8,7 @@ import store, { signOutSuccess } from '../store'
 const unauthorizedCode = [401]
 
 const BaseService = axios.create({
-    timeout: 60000,
+    timeout: 10000,
     baseURL: appConfig.apiPrefix,
     withCredentials: true,
     withXSRFToken: true,

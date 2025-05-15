@@ -42,7 +42,7 @@ export async function apiBuyDisco(data: DiscoFormType) {
 
 export async function apiGetAvailableNetwork() {
     return ApiService.fetchData<AvailableNetworkResponse>({
-        url: '/data/network',
+        url: '/user/data/available/network',
         method: 'get',
     })
 }
@@ -79,8 +79,9 @@ export async function apiDataPlans(data: {
     network: string
     networkType: string
 }) {
+    const {network, networkType} = data;
     return ApiService.fetchData<DataVariationResponse>({
-        url: '/data/plans',
+        url: `/user/data/plans?network=${network}&networkType=${networkType}`,
         method: 'get',
         data: data,
     })

@@ -21,6 +21,7 @@ export interface User {
     email_verified_at: any
     created_at: string
     updated_at: string
+    pin?: string | null
 }
 
 export type SignInResponse = {

@@ -59,6 +59,18 @@ const PinConfirmation = ({
             )
             onDialogClose(e)
             await onPinOk()
+            setSetSubmitting(false)
+        }
+        else{
+            toast.push(
+                <Notification type="danger" duration={2000}>
+                    <p>{res.message}</p>
+                </Notification>,
+                {
+                    placement: 'top-end',
+                }
+            )
+            setSetSubmitting(false)
         }
     }
 
@@ -68,7 +80,7 @@ const PinConfirmation = ({
                 isOpen={dialogIsOpen}
                 shouldCloseOnOverlayClick={false}
                 shouldCloseOnEsc={false}
-                width={300}
+                width={350}
                 onClose={onDialogClose}
                 onRequestClose={onDialogClose}
             >
