@@ -1,13 +1,16 @@
 import axios from 'axios'
+
 import appConfig from '@/configs/app.config'
 import { TOKEN_TYPE, REQUEST_HEADER_AUTH_KEY } from '@/constants/api.constant'
 import { PERSIST_STORE_NAME } from '@/constants/app.constant'
 import deepParseJson from '@/utils/deepParseJson'
 import store, { signOutSuccess } from '../store'
+import { setupCache } from 'axios-cache-interceptor'
 
 const unauthorizedCode = [401]
 
-const BaseService = axios.create({
+const BaseService = setupCache(
+    axios.create({
     timeout: 60000,
     baseURL: appConfig.apiPrefix,
     withCredentials: true,
@@ -20,8 +23,13 @@ const BaseService = axios.create({
 
         // 'Access-Control-Allow-origin': '*',
     },
-})
-//
+
+}),
+    {
+
+    }
+    )
+
 BaseService.defaults.withCredentials = true
 // BaseService.defaults.proxy = {
 //     protocol: 'http',

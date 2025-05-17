@@ -103,6 +103,12 @@ const PinConfirmation = ({
                         inputStyle={{ borderRadius: 10, margin: 5 }}
                         // inputFocusStyle={{ borderColor: 'blue' }}
                         autoSelect={true}
+                        focus={true}
+                        placeholder={'*'}
+                        inputFocusStyle={{
+                            borderColor: 'blue',
+                            borderWidth: '2px',
+                        }}
                         regexCriteria={/^[ A-Za-z0-9_@./#&+-]*$/}
                         // onChange={(value, index) => {}}
                         onComplete={async (value, index) => {

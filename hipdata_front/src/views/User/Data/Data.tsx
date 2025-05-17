@@ -29,6 +29,7 @@ import isEmpty from 'lodash/isEmpty'
 import PinConfirmation from '@/components/shared/PinConfirmation'
 import { ActionMeta, ControlProps, GroupBase,components, OptionProps, SingleValue } from 'react-select'
 import { useAppSelector } from '@/store'
+import { Loading } from '@/components/shared'
 
 export type DataFormType = {
     phone: string
@@ -103,7 +104,7 @@ const { Control } = components
 const Data = () => {
 
     const [networksIsLoading, setNetworksIsLoading] = useState<boolean>(false)
-
+    const [submittingLoading, setSetSubmittingLoading] = useState<boolean>(false)
     const [networks, setNetworks] = useState<NetworkProviderType[]>([])
     const [planType, setPlanType] = useState<NetworkType[]>([])
 
@@ -149,6 +150,7 @@ const Data = () => {
     }
 
     const handlePinOk = async (_values: DataFormType) => {
+        setSetSubmittingLoading(true)
         const { amount, phone, network,planType, plan } = _values
         const data: BuyDataScheme = {
             network_id: Number(network),
@@ -158,6 +160,7 @@ const Data = () => {
         }
 
         const res = await DataRequest(data)
+        setSetSubmittingLoading(false)
         if (isErrorType(res)) {
             setMessage(res.message)
             toast.push(
@@ -236,7 +239,7 @@ const Data = () => {
     }
 
     return (
-        <div>
+        <Loading loading={submittingLoading || false} className="w-full" style={{ height: '100%'}}>
             <div className="flex items-center justify-between mb-6">
                 <h4>Buy Data</h4>
             </div>
@@ -278,11 +281,11 @@ const Data = () => {
                                             autoComplete="off"
                                             name="phone"
                                             placeholder="E.g 09055677899"
-                                            onChange={(event: any) => {
+                                            onChange={ async (event: any) => {
                                                 setPhone(
                                                     event.target.value as string
                                                 )
-                                                setFieldValue(
+                                                await setFieldValue(
                                                     'phone',
                                                     event.target.value as string
                                                 )
@@ -292,17 +295,19 @@ const Data = () => {
                                                         'phone',
                                                         error
                                                     )
-                                                    setFieldTouched(
+                                                    await setFieldTouched(
                                                         'phone',
                                                         true
                                                     )
                                                 }
 
                                                 if (getNetworkName() != null) {
-                                                    setFieldValue(
+                                                    await setFieldValue(
                                                         'network',
                                                         getNetworkId()
                                                     )
+                                                    await setFieldValue('planType', '')
+                                                    await setFieldValue('plan', '')
 
                                                 } else {
                                                     setFieldValue('network', '')
@@ -359,6 +364,8 @@ const Data = () => {
                                                                 )
                                                                 setPlanType([])
                                                                 setPlans([])
+                                                                await setFieldValue('planType', '')
+                                                                await setFieldValue('plan', '')
                                                                 setPlanType(option!.type)
 
                                                                 await form.setFieldValue(
@@ -412,6 +419,7 @@ const Data = () => {
                                                         field.name,
                                                         option?.alias
                                                     )
+
                                                     setPlans(option!.plans)
                                                 }}
                                             />
@@ -458,7 +466,7 @@ const Data = () => {
                                             ) => {
                                                 await setFieldValue(
                                                     'amount',
-                                                    option?.amount
+                                                    user.user_type ? option?.agent_amount :option?.amount
                                                 )
                                                 await form.setFieldValue(
                                                     field.name,
@@ -504,7 +512,7 @@ const Data = () => {
                     </Form>
                 )}
             </Formik>
-        </div>
+        </Loading>
     )
 }
 
