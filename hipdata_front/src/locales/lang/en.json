@@ -1,0 +1,30 @@
+{
+    "nav": {
+        "home": "Home",
+        "referral": {
+            "main": "Referral",
+            "log": "Log",
+            "level": "Level"
+        },
+        "banking": {
+            "main": "Banking",
+            "airtime": "Buy Airtime",
+            "data": "Buy Data"
+        },
+        "finance": {
+            "main": "finance",
+            "withdraw": {
+                "main" :"Withdraw",
+                "logs": "Withdrawal Logs"
+            },
+            "withdraw_log": "Withdraw Logs"
+        },
+        "task": {
+            "main": "Earn Dollar",
+            "social": "Social Task",
+            "ads": "Post Advert",
+            "sponsored": "Sponsored Post",
+            "withdraw_log": "Withdraw Logs"
+        }
+    }
+}
