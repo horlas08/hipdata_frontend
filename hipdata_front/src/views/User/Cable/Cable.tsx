@@ -27,13 +27,12 @@ import {
 import { HiCheck } from 'react-icons/hi'
 import { useNetworkDetect } from '@/utils/hooks/useNetworkDetect'
 import {
-    DataVariationResponse,
-    NetworkPlanType,
-    NetworkType,
+    AvailableCableResponse, CablePlan
 } from '@/@types/billing'
 import { isErrorType } from '@/utils/helpeer'
 import isEmpty from 'lodash/isEmpty'
 import PinConfirmation from '@/components/shared/PinConfirmation'
+import { apiVerifyCableName } from '@/services/BillingService'
 
 export type CableFormType = {
     cable_name: string
@@ -57,12 +56,7 @@ type FormModel = {
     input: string
     select: string
 }
-export type BuyAirtimeScheme = {
-    phone: string
-    amount: number
-    network: string
-    // wallet: string
-}
+
 const phoneRegExp =
     /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/
 
@@ -90,70 +84,37 @@ const Cable = () => {
     const [networksIsLoading, setNetworksIsLoading] = useState<boolean>(false)
     const [planIsLoading, setPlanIsLoading] = useState<boolean>(false)
     const [planTypeIsLoading, setPlanTypeIsLoading] = useState<boolean>(false)
-    const [networks, setNetworks] = useState<NetworkType[]>([])
-    const [planType, setPlanType] = useState<NetworkPlanType[]>([])
+    const [networks, setNetworks] = useState<AvailableCableResponse>([])
     const [customerName, setCustomerName] = useState<string>('')
-    const [wallet, setWallet] = useState(false)
-    const [plans, setPlans] = useState<DataVariationResponse['data']>([])
+
+    const [plans, setPlans] = useState<CablePlan[]>([])
     const [openPinModal, setOpenPinModal] = useState(false)
 
     const [message, setMessage] = useTimeOutMessage()
 
-    const { BuyCableRequest, GetDataType, GetCablePlans, GetAllCable } =
+    const { BuyCableRequest, GetAllCable } =
         useBillingRequest()
 
     useEffect(() => {
-        setNetworksIsLoading(true)
-        GetAllCable()
-            .then((value) => {
-                console.log(value)
-                if (!isErrorType(value)) {
-                    setNetworks(value?.data)
-                } else setNetworks([])
-            })
-            .finally(() => {
-                setNetworksIsLoading(false)
-            })
+        if(isEmpty(networks)){
+            setNetworksIsLoading(true)
+            GetAllCable()
+                .then((value) => {
+                    console.log(value)
+                    if (!isErrorType(value)) {
+                        setNetworks(value)
+                    } else setNetworks([])
+                })
+                .finally(() => {
+                    setNetworksIsLoading(false)
+                })
+        }
+
 
         setCustomerName('')
     }, [])
 
-    function handleChangeNetwork(
-        network: string,
-        setFieldValue: (
-            field: string,
-            value: any,
-            shouldValidate?: boolean | undefined
-        ) => Promise<void | FormikErrors<CableFormType>>
-    ) {
-        setPlanType([])
-        setFieldValue('planType', null)
-        setFieldValue('plan', null)
-        setPlans([])
-    }
 
-    const onPlanTypeFocus = async (network: string) => {
-        if (isEmpty(planType)) {
-            setPlanTypeIsLoading(true)
-            const res = await GetDataType({ network })
-            if (!isErrorType(res)) {
-                console.log(res['data'])
-                setPlanType(res['data'])
-            }
-            setPlanTypeIsLoading(false)
-        }
-    }
-    const onPlanFocus = async (cable: string) => {
-        if (isEmpty(plans)) {
-            setPlanIsLoading(true)
-            const res = await GetCablePlans({ cable })
-            if (!isErrorType(res)) {
-                console.log(res['data'])
-                setPlans(res['data'])
-            }
-            setPlanIsLoading(false)
-        }
-    }
 
     const handlePinOk = async (_values: CableFormType) => {
         // const { amount, cable_name, phone } = _values
@@ -187,7 +148,7 @@ const Cable = () => {
 
     const CustomSelectOption:
         | React.ComponentType<
-              OptionProps<NetworkType, false, GroupBase<NetworkType>>
+              OptionProps<AvailableCableResponse[number], false, GroupBase<AvailableCableResponse[number]>>
           >
         | undefined = ({ innerProps, label, data, isSelected }) => {
         return (
@@ -200,21 +161,21 @@ const Cable = () => {
                 {...innerProps}
             >
                 <div className="flex items-center">
-                    <Avatar shape="circle" size={20} src={data.logo} />
+                    <Avatar shape="circle" size={20} src={`/img/cable/${data.alias}.png`} />
                     <span className="ml-2 rtl:mr-2">{label}</span>
                 </div>
                 {isSelected && <HiCheck className="text-emerald-500 text-xl" />}
             </div>
         )
     }
-    const { phone, setPhone, error, getNetworkName } = useNetworkDetect()
 
     const CustomControl:
         | React.ComponentType<
-              ControlProps<NetworkType, false, GroupBase<NetworkType>>
+              ControlProps<AvailableCableResponse[number], false, GroupBase<AvailableCableResponse[number]>>
           >
         | undefined = ({ children, ...props }) => {
         const selected = props.getValue()[0]
+
         return (
             <Control {...props}>
                 {selected && (
@@ -222,7 +183,7 @@ const Cable = () => {
                         className="ltr:ml-4 rtl:mr-4"
                         shape="circle"
                         size={18}
-                        src={selected.logo}
+                        src={`/img/cable/${selected.alias}.png`}
                     />
                 )}
                 {children}
@@ -230,6 +191,17 @@ const Cable = () => {
         )
     }
 
+    async function verifyCableName(cable_number: string, setFieldValue: (field: string, value: any, shouldValidate?: boolean) => Promise<void | FormikErrors<FormModel>>) {
+        const res = await apiVerifyCableName(cable_number)
+        if (res.status == 200) {
+            setCustomerName(res.data.name)
+            setFieldValue('customer_name', res.data.name)
+        }
+        else {
+            setCustomerName('')
+            setFieldValue('customer_name', '')
+        }
+    }
     return (
         <div>
             <div className="flex items-center justify-between mb-6">
@@ -283,25 +255,24 @@ const Cable = () => {
                                                     Option: CustomSelectOption,
                                                     Control: CustomControl,
                                                 }}
+                                                getOptionLabel={option => option.name}
+                                                getOptionValue={option => option.id.toString()}
                                                 isLoading={networksIsLoading}
                                                 value={networks.filter(
-                                                    (option: NetworkType) =>
-                                                        option.value ===
+                                                    (option: AvailableCableResponse[number]) =>
+                                                        option.id.toString() ===
                                                         values.cable_name
                                                 )}
                                                 // onFocus={onPlanFocus}
-                                                onChange={(
-                                                    option: SingleValue<NetworkType>
+                                                onChange={async (
+                                                    option: SingleValue<AvailableCableResponse[number]>
                                                 ) => {
                                                     console.log(option)
-                                                    handleChangeNetwork(
-                                                        option?.value as string,
-                                                        setFieldValue
-                                                    )
-
-                                                    form.setFieldValue(
+                                                    await setFieldValue('plan', null)
+                                                    setPlans(option!.plans)
+                                                    await setFieldValue(
                                                         field.name,
-                                                        option?.value
+                                                        option!.id.toString()
                                                     )
                                                 }}
                                             />
@@ -328,7 +299,7 @@ const Cable = () => {
                                                 isDisabled={!!errors.cable_name}
                                                 options={plans}
                                                 getOptionValue={(option) =>
-                                                    option.variation_code
+                                                    option.alias
                                                 }
                                                 getOptionLabel={(option) =>
                                                     option.name
@@ -336,33 +307,25 @@ const Cable = () => {
                                                 isLoading={planIsLoading}
                                                 value={plans.filter(
                                                     (
-                                                        option: DataVariationResponse['data'][0]
+                                                        option: CablePlan
                                                     ) =>
-                                                        option.variation_code ===
+                                                        option.alias ===
                                                         values.plan
                                                 )}
-                                                onFocus={() =>
-                                                    onPlanFocus(values.plan)
-                                                }
+
                                                 onChange={async (
                                                     option: SingleValue<
-                                                        DataVariationResponse['data'][0]
+                                                        CablePlan
                                                     >
                                                 ) => {
                                                     await setFieldValue(
                                                         'amount',
-                                                        option?.variation_amount
+                                                        option?.amount
                                                     )
-                                                    await setFieldValue(
-                                                        'customer_name',
-                                                        'qozeem monsuu'
-                                                    )
-                                                    setCustomerName(
-                                                        'qozeem monsuu'
-                                                    )
+
                                                     await form.setFieldValue(
                                                         field.name,
-                                                        option?.variation_code
+                                                        option?.alias
                                                     )
                                                 }}
                                             />
@@ -381,7 +344,7 @@ const Cable = () => {
                                     <Field
                                         name="iuc"
                                         component={Input}
-                                        onChange={(event: any) => {
+                                        onChange={async (event: any) => {
                                             setFieldValue(
                                                 'iuc',
                                                 event.target.value as string
@@ -390,26 +353,24 @@ const Cable = () => {
                                     />
                                 </FormItem>
                             </div>
+                            <div className={''}>
+                                <FormItem
+                                    className="w-full"
+                                    label="Customer Name"
+                                    invalid={
+                                        errors.customer_name &&
+                                        touched.customer_name
+                                    }
+                                    errorMessage={errors.plan}
+                                >
+                                    <Field
+                                        name="amount"
+                                        disabled={true}
+                                        component={Input}
+                                    />
+                                </FormItem>
+                            </div>
 
-                            {customerName && (
-                                <div className={''}>
-                                    <FormItem
-                                        className="w-full"
-                                        label="Customer Name"
-                                        invalid={
-                                            errors.customer_name &&
-                                            touched.customer_name
-                                        }
-                                        errorMessage={errors.plan}
-                                    >
-                                        <Field
-                                            name="amount"
-                                            disabled={true}
-                                            component={Input}
-                                        />
-                                    </FormItem>
-                                </div>
-                            )}
 
                             <div className={''}>
                                 <FormItem

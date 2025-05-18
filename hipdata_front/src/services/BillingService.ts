@@ -8,7 +8,7 @@ import {
     AvailableDiscoTypeResponse,
     AvailableNetworkResponse, BuyDataScheme,
     CableResponse,
-    CableVariationResponse, DataResponse
+    CableVariationResponse, CableVerifyResponse, DataResponse
 
 } from '@/@types/billing'
 import { BuyAirtimeScheme } from '@/views/User/Airtime/Airtime'
@@ -55,8 +55,17 @@ export async function apiGetAvailableNetwork() {
 
 export async function apiGetAvailableCable() {
     return ApiService.fetchData<AvailableCableResponse>({
-        url: '/cable/network',
+        url: '/user/cable',
         method: 'get',
+    })
+}
+export async function apiVerifyCableName(cable_number: string) {
+    return ApiService.fetchData<CableVerifyResponse>({
+        url: '/user/cable/verify',
+        method: 'post',
+        data: {
+            iuc_number: cable_number,
+        }
     })
 }
 

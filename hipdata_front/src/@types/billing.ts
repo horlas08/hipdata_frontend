@@ -54,10 +54,29 @@ export type DiscoType = {
 
 export type AvailableNetworkResponse = NetworkProviderType[]
  | ErrorType
-export type AvailableCableResponse = {
-    data: CableType[]
-    message: string
+
+export interface CablePlan {
+    id: number;
+    name: string;
+    alias: string;
+    amount: number;
+    api_provider_id: number;
+    cable_provider_id: number;
+    status: number;
+    created_at: string; // ISO date string
+    updated_at: string; // ISO date string
 }
+ interface CableProvider {
+    id: number;
+    name: string;
+    alias: string;
+    status: number;
+    plans: CablePlan[];
+}
+
+
+export type AvailableCableResponse = CableProvider[];
+
 
 export type AvailableDiscoResponse = {
     data: DiscoInfo[]
@@ -75,6 +94,10 @@ export interface CableResponse {
     status: boolean
     message: string
 }
+export interface CableVerifyResponse extends CableResponse{
+   name: string
+}
+
 export type DataPlan = {
   id: number;
   name: string;
