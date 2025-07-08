@@ -1,3 +1,3 @@
-import Wallets from './Wallets'
+import BankTransfer from './components/Wallet';
 
-export default Wallets
+export default BankTransfer;

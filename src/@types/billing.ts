@@ -107,6 +107,7 @@ export type TransactionResponse = {
     post_balance: string;
     trx_type?: string | null;
     status: number;
+    message?: string;
     trx?: string | null;
     details?: string | null;
     remark?: string | null;

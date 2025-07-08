@@ -57,7 +57,7 @@ export const protectedRoutes: Routes = [
     {
         key: 'deposit',
         path: '/deposit',
-        component: lazy(() => import('@/views/User/Deposit/Wallets/index')),
+        component: lazy(() => import('@/views/User/Deposit/Deposit')),
         authority: [],
     },
 

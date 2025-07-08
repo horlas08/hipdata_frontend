@@ -6,7 +6,10 @@ import {
     apiGetAvailableDisco,
     apiGetAvailableDiscoType,
     apiGetAvailableNetwork,
-    apiGetCableVariation, apiGetTransaction
+    apiGetCableVariation, apiGetTransaction,
+    apiInitializeCheckout,
+    apiValidateCoupon,
+    apiRedeemCoupon
 } from '@/services/BillingService'
 
 import { useNavigate } from 'react-router-dom'
@@ -52,7 +55,7 @@ const useBillingRequest = () => {
             return {
                 status: false,
                 message: errors?.response?.data?.message || errors.toString(),
-            }as ErrorType
+            } as ErrorType
         }
     }
     const DataRequest = async (values: BuyDataScheme) => {
@@ -60,7 +63,7 @@ const useBillingRequest = () => {
             const resp = await apiBuyData(values)
 
             if (resp.status == 200) {
-                return  resp.data;
+                return resp.data;
             } else {
                 throw Error(resp?.data?.message)
             }
@@ -115,8 +118,8 @@ const useBillingRequest = () => {
             } as ErrorType
         }
     }
-    const DataAvailableNetwork =  useCallback
-    (async () => {
+    const DataAvailableNetwork = useCallback
+        (async () => {
 
             try {
                 const resp = await apiGetAvailableNetwork()
@@ -135,7 +138,7 @@ const useBillingRequest = () => {
                 } as ErrorType
             }
 
-    }, []);
+        }, []);
 
     const GetAllCable: () => Promise<
         AvailableCableResponse | ErrorType
@@ -252,7 +255,7 @@ const useBillingRequest = () => {
                 console.log(resp.data)
                 return resp.data
             } else {
-                throw Error(resp?.data?.message)
+                throw Error(resp?.data?.message!)
             }
             // eslint-disable-next-line  @typescript-eslint/no-explicit-any
         } catch (errors: any) {
@@ -260,6 +263,60 @@ const useBillingRequest = () => {
                 status: false,
                 message: errors?.response?.data?.message || errors.toString(),
             } satisfies ErrorType
+        }
+    }
+
+    const InitializeCheckout = async (data: { amount: number; gateway: string }) => {
+        try {
+            const resp = await apiInitializeCheckout(data)
+
+            if (resp.status == 200) {
+                return resp.data
+            } else {
+                throw Error(resp?.data?.message)
+            }
+            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+        } catch (errors: any) {
+            return {
+                status: false,
+                message: errors?.response?.data?.message || errors.toString(),
+            } as ErrorType
+        }
+    }
+
+    const ValidateCoupon = async (couponCode: string) => {
+        try {
+            const resp = await apiValidateCoupon(couponCode)
+
+            if (resp.status == 200) {
+                return resp.data
+            } else {
+                throw Error(resp?.data?.message)
+            }
+            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+        } catch (errors: any) {
+            return {
+                status: false,
+                message: errors?.response?.data?.message || errors.toString(),
+            } as ErrorType
+        }
+    }
+
+    const RedeemCoupon = async (couponCode: string) => {
+        try {
+            const resp = await apiRedeemCoupon(couponCode)
+
+            if (resp.status == 200) {
+                return resp.data
+            } else {
+                throw Error(resp?.data?.message)
+            }
+            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+        } catch (errors: any) {
+            return {
+                status: false,
+                message: errors?.response?.data?.message || errors.toString(),
+            } as ErrorType
         }
     }
 
@@ -273,7 +330,11 @@ const useBillingRequest = () => {
         GetAllCable,
         DataRequest,
         GetDiscoType,
+        GetTransaction,
         BuyCableRequest,
+        InitializeCheckout,
+        ValidateCoupon,
+        RedeemCoupon,
     }
 }
 

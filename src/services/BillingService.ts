@@ -97,7 +97,7 @@ export async function apiGetAvailableDiscoType() {
         url: '/disco/type',
         method: 'get',
     })
-}export async function apiGetTransaction() {
+} export async function apiGetTransaction() {
     return ApiService.fetchData<TransactionResponse>({
         url: '/user/transaction',
         method: 'get',
@@ -118,6 +118,30 @@ export async function apiGetCableVariation({ cable }: { cable: string }) {
             network: cable,
         },
         method: 'get',
+    })
+}
+
+export async function apiInitializeCheckout(data: { amount: number; gateway: string }) {
+    return ApiService.fetchData<any>({
+        url: '/user/deposit/checkout',
+        method: 'post',
+        data,
+    })
+}
+
+export async function apiValidateCoupon(couponCode: string) {
+    return ApiService.fetchData<any>({
+        url: '/user/deposit/coupon/validate',
+        method: 'post',
+        data: { coupon_code: couponCode },
+    })
+}
+
+export async function apiRedeemCoupon(couponCode: string) {
+    return ApiService.fetchData<any>({
+        url: '/user/deposit/coupon/redeem',
+        method: 'post',
+        data: { coupon_code: couponCode },
     })
 }
 

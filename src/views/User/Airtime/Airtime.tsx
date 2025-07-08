@@ -22,7 +22,7 @@ import useBillingRequest from '@/utils/hooks/useBillingRequest'
 import { AirtimeNetworkProvider } from '@/@types/billing'
 
 const initialValue = {
-    phone: '09014985680',
+    phone: '09110545505',
     amount: '100' as unknown as number,
     network: 'airtel',
     wallet: '',
